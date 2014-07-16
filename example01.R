@@ -5,7 +5,7 @@
 # Author: Taylor Arnold <taylor@research.att.com>
 # Purpose: Set up iotools for an existing hadoop installation
 #   and demo simple example using iotools. You must first
-#   run the create create_data.R
+#   run the create_data.R script and install iotools
 
 # Load in the iotools package (if this fails, you will need
 # to make sure the package has been installed correctly)
@@ -37,7 +37,7 @@ if(Sys.getenv("HADOOP_HOME") == "") {
 # below to manually specify the location using the envirnoment
 # variable HADOOP_STREAMING_JAR.
 
-# You should only edit this if the hmr command below fails:
+# You should only edit this if the hmr command below fails!
 
 if(Sys.getenv("HADOOP_STREAMING_JAR") != "") {
   Sys.setenv(HADOOP_STREAMING_JAR="your_location_here")
@@ -60,17 +60,20 @@ system(paste0(hfs, " -put data/* iotools_examples/input"))
 # standard normal distribution, calculate the maximum of each row,
 # and then calculate the mean of this maximum over all rows.
 
-# The basic call the "hmr" (hadoop mapreduce) needs to know where
+# The basic call to "hmr" (hadoop mapreduce) needs to know where
 # the input data is, where the output data should go (this must be
 # an non-existing directory on hdfs) and what functions to call as
 # the mappers and and reducers. No other options are needed to make
 # this example work.
 
-# Remove this, in case it already exists
+# Remove the output directory, in case it already exists
+
 system(paste0(hfs, " -rm -r iotools_examples/output01"))
 
 # Run the streaming job (note, there will be a lot of output from
-# this job)
+# this job). The output variable r will be a character vector 
+# indicating the output path on hdfs.
+
 r = hmr(input = hinput("iotools_examples/input/input01_rnorm_matrix.dat"),
         output = hpath("iotools_examples/output01"),
         wait = TRUE,
@@ -86,18 +89,19 @@ r = hmr(input = hinput("iotools_examples/input/input01_rnorm_matrix.dat"),
         }
   )
 
-# As the result should just be a single number, we can display the outout
-# using a call to hadoop fs -cat:
+# As the finaly, result should just be a single number, we can display
+# the outout using a call to hadoop fs -cat:
 
 system(paste0(hfs, " -cat iotools_examples/output01/part-*"))
 
 # The only difficult part about calling the hmr function is understanding
 # the way data is input and output from the mappers and reducers. By default
 # the input to both uses a call to the mstrsplit function; locally we can
-# observe this on a small chunk of the input dataset:
+# replicate this on the first three rows of the input dataset:
 
 x = scan("data/input01_rnorm_matrix.dat", what="raw", sep="\n", nmax=3)
 m = mstrsplit(x, "|", "\t")
+print(m)
 
 # Printing m, one can see that the mstrsplit function creates a character
 # matrix. This is why we need to use "apply(m,2,as.numeric)" on m in the
@@ -105,7 +109,7 @@ m = mstrsplit(x, "|", "\t")
 # seperating character; if you have a different seperating character, or
 # want an entirely different formatter altogether, the hmr function accepts
 # a formatter argument. There is good documentation on both hmr and mstrsplit
-# detailing how to do this.
+# detailing how to do this, and we will demonstrate this in the next example.
 
 # The formatting of the output of a call to the mapper (or reducer) depends
 # on the class of the output. We can simulate this using the as.output function
@@ -128,14 +132,16 @@ iotools:::as.output.default(m_max)
 
 # There are additional methods for lists and tables that work similarly.
 
-# Why do we use these complicated output functions, and why are all of the
-# tab characters mixed in with the "|"? The reason for two types of seperators
-# is to facilite seperating the output from the mappers into <key,value>
+# WHY DO WE USE THESE COMPLICATED OUTPUT FUNCTION, and WHY ARE WE USING
+# *BOTH* TABS AND VERTICAL BARS!? - The reason for two types of seperators
+# is to facilitate seperating the output from the mappers into <key,value>
 # pairs in the hadoop streaming job. The iotools package is set up to
-# send key value pairs seperated by a tab character. The mstrsplit function
-# was written to handle input using two types of seperators; the "key" is
-# placed into the rownames/names argument of the matrix/vector, and the value
-# is split by the "|" seperator (in the case of a matrix).
+# send key value pairs seperated by a tab character. So the tab seperates
+# the <key> and the verticle bar seperates all of the columns in the single 
+# <value>. The mstrsplit function was written to handle input using two types
+# of seperators; the "key" is placed into the rownames/names argument of the
+# matrix/vector, and the value is split by the "|" seperator (in the case of
+# a matrix).
 
 # In our example, we set all of the keys equal to "1", so that hadoop would
 # know to send all of the values to the same reducer in order to calculate a
