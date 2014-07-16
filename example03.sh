@@ -8,10 +8,13 @@
 #   the hmr function in iotools, but takes advantage of lower
 #   level functions in the package. This construct is useful
 #   as (i) it illustrates the inner workings of the iotools package,
-#   and (ii) it can be useful to call streaming directly when
-#   using mappers and reducers in different languages (i.e., parsing
-#   text data in python using nltk from the mappers and then running
-#   statistically summaries with R in the reducers).
+#   (ii) it can be useful to call streaming directly in some
+#   cases, such as part of a stack of tools which are primarily
+#   in another programming language, (iii) it should how the
+#   iotools functions can help in processing large datasets even
+#   when not using hadoop (the mappers and reducers simply read
+#   and write from standard out and could be integrated into
+#   other parallel paradigms).
 
 # Unlike example01 and example02, there is a lot less commentary
 # in this example. It simple mimics the functionality of example02
@@ -44,9 +47,5 @@ $HADOOP_HOME/bin/hadoop fs -rm -r iotools_examples/output03
     -mapper example03_map.R \
     -reducer example03_reduce.R
 
-# As before, see the head of the output:
+# As before, we can see test the code by looking at the head of the output:
 /usr/lib/hadoop/bin/hadoop fs -cat iotools_examples/output03/part-* | head -n 30
-
-
-
-
