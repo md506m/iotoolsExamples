@@ -1,8 +1,8 @@
 iotoolsExamples
 ===============
 
-This project contains three examples of using the iotools package
-for running jobs using hadoop streaming. It assumes that a working
+This project contains three examples of using the [iotools](https://github.com/s-u/iotools)
+R package for running jobs using hadoop streaming. It assumes that a working
 Hadoop installation has already been set-up, and the iotools package
 has been installed (tested using version 0.1-4). It has a copious
 number of comments, offering a gentle introduction along with
