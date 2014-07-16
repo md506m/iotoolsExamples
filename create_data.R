@@ -7,7 +7,7 @@
 #   running example01.R, example02.R, and examploe03.sh
 
 # This script should be executed from within the examples
-# directory. It should run on any standard installation
+# directory. It can be run on any standard installation
 # of R, and does not itself call any Hadoop functions or
 # make calls to the iotools package.
 
