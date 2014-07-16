@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/usr/bin/env sh
 #
 # Name: example03.sh
 # Date: 2014-07-16
