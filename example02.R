@@ -6,7 +6,8 @@
 # Purpose: Show a more involved example using the hmr function
 #   in the iotools package to merge two datasets on a common key.
 #   Assumes that create_data.R as been run to create the data, and
-#   example01.R has been run to pus the data to hdfs.
+#   example01.R has been run to push the data to hdfs.
+
 
 # Load in the iotools package and configure the environment
 # variables and set conveniance function hfs; refer to the
@@ -53,13 +54,13 @@ hfs = paste0(Sys.getenv("HADOOP_PREFIX"), "/bin/hadoop fs")
 # Because the input files have similar names, it is possible to work
 # around issue (3) by specifying the hinput as "data/input0[23]_hh_income_201[34].csv"
 # This works well is some situations, but we will give a solution that does
-# not depend on similar filenames. As a state names mapping is present in
-# the base of R, we can also work around issue (5), but will again present
-# a more generic solution.
+# not depend on inputs with similar filenames. As a state names mapping is present
+# in the base environment of R, we can also work around issue (5), but will again
+# present a more generic solution.
 
 # So, for generic solutions to these issues we will do the following:
 #
-#   (1) Specify the map formatter as mstrsplit(m, ",")
+#   (1) Specify the map formatter as function(m) {mstrsplit(m, ",")}
 #   (2) Set the row names of the output appropriately
 #   (3) Declare an additional input file using the "hadoop.opt" option to hmr
 #   (4) This is not actually a problem as an input to the mappers, but will need
@@ -67,8 +68,8 @@ hfs = paste0(Sys.getenv("HADOOP_PREFIX"), "/bin/hadoop fs")
 #         output from the mappers have the same number of columns
 #   (5) Will send additional data to the mappers and reducers using the "aux"
 #         option to hmr
-#   (6) We will add an additional column to the output of the mappers giving the
-#         of the data records.
+#   (6) We will add an additional column to the output of the mappers giving an
+#         id the data records to indicate which input the record came from.
 
 # The reason that (4) is not a problem for the mappers is that a single mapper
 # will only ever get inputs from a single input file.
@@ -76,13 +77,16 @@ hfs = paste0(Sys.getenv("HADOOP_PREFIX"), "/bin/hadoop fs")
 # Now, we show the code to implement these changes:
 
 # We need to remove the output directory, if it exists:
+
 system(paste0(hfs, " -rm -r iotools_examples/output02"))
 
-# We als construct the map between state abbreviation and name
+# We also construct the map between state abbreviation and name:
+
 state_map = cbind(state.abb, state.name)
 
 # Run the streaming job (note, there will be a lot of output to the console
-# from this call.
+# from this call).
+
 r = hmr(input = hinput("iotools_examples/input/input02_hh_income_2013.csv"),
         output = hpath("iotools_examples/output02"),
         formatter = list(map = function(m) return(mstrsplit(m, ",")), # for csv file
@@ -91,11 +95,11 @@ r = hmr(input = hinput("iotools_examples/input/input02_hh_income_2013.csv"),
         aux = list(state_map = state_map),
         reducers = 10, # probably overkill, but helps to illustrate the example
         map = function(m) {
-            if(ncol(m) == 2) { # 2013
+            if(ncol(m) == 2) { # Test if this mapper has 2013 data
               output = cbind("2013", m[,2], "") # note: extra column for missing state
               rownames(output) = m[,1]
             }
-            if(ncol(m) == 3) { # 2014
+            if(ncol(m) == 3) { #  Test if this mapper has 2014 data
               output = cbind("2014", m[,2:3])
               rownames(output) = m[,1]
 
@@ -124,7 +128,7 @@ r = hmr(input = hinput("iotools_examples/input/input02_hh_income_2013.csv"),
         hadoop.opt="-input iotools_examples/input/input03_hh_income_2014.csv"
   )
 
-# You can see how hadoop distributed the job but seeing the file sizes of the
+# You can see how hadoop distributed the job by seeing the file sizes of the
 # ten reducers:
 
 system(paste0(hfs, " -du iotools_examples/output02"))
@@ -135,12 +139,3 @@ system(paste0(hfs, " -du iotools_examples/output02"))
 # of them in this small example)
 
 system(paste0(hfs, " -cat iotools_examples/output02/part-* | head -n 30"))
-
-
-
-
-
-
-
-
-
