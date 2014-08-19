@@ -8,7 +8,6 @@
 #   Assumes that create_data.R as been run to create the data, and
 #   example01.R has been run to push the data to hdfs.
 
-
 # Load in the iotools package and configure the environment
 # variables and set conveniance function hfs; refer to the
 # comments in example01.R for help with this step.

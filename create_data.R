@@ -28,9 +28,19 @@ input = data.frame(keys = keys,
 write.table(input[sample(1:nrow(input),N/2),], "data/input02_hh_income_2013.csv",
             sep=",", col.names=FALSE, row.names=FALSE, quote=FALSE)
 
-# input03_hh_income_2014.date
+# input03_hh_income_2014.dat
 input$income = round(input$income + runif(N, min=0, max=10000))
 input$state = sample(c(rep("",10), state.abb), nrow(input), replace=TRUE)
 write.table(input[sample(1:nrow(input),N/2),], "data/input03_hh_income_2014.csv",
             sep=",", col.names=FALSE, row.names=FALSE, quote=FALSE)
+
+# input04_logistic_regression.dat
+set.seed(10)
+n = 1000
+d = 10
+x = cbind(1, matrix(rnorm(n*(d-1)), ncol=d-1))
+y = as.numeric(x[,2] + rnorm(n) > 0)
+data = cbind(y, x)
+write.table(data, "data/input04_logistic_regression.dat",
+            sep="|", col.names=FALSE, row.names=FALSE, quote=FALSE)
 
