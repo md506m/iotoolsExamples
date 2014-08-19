@@ -51,6 +51,7 @@ hfs = paste0(Sys.getenv("HADOOP_HOME"), "/bin/hadoop fs")
 # commands create the directory (if not already extant) and push
 # the three datasets created by "create_data.R" onto hdfs:
 
+system(paste0(hfs, " -rmr iotools_examples/"))
 system(paste0(hfs, " -mkdir -p iotools_examples/input"))
 system(paste0(hfs, " -put data/* iotools_examples/input"))
 
@@ -71,7 +72,7 @@ system(paste0(hfs, " -put data/* iotools_examples/input"))
 system(paste0(hfs, " -rm -r iotools_examples/output01"))
 
 # Run the streaming job (note, there will be a lot of output from
-# this job). The output variable r will be a character vector 
+# this job). The output variable r will be a character vector
 # indicating the output path on hdfs.
 
 r = hmr(input = hinput("iotools_examples/input/input01_rnorm_matrix.dat"),
@@ -137,7 +138,7 @@ iotools:::as.output.default(m_max)
 # is to facilitate seperating the output from the mappers into <key,value>
 # pairs in the hadoop streaming job. The iotools package is set up to
 # send key value pairs seperated by a tab character. So the tab seperates
-# the <key> and the verticle bar seperates all of the columns in the single 
+# the <key> and the verticle bar seperates all of the columns in the single
 # <value>. The mstrsplit function was written to handle input using two types
 # of seperators; the "key" is placed into the rownames/names argument of the
 # matrix/vector, and the value is split by the "|" seperator (in the case of
