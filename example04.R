@@ -56,7 +56,7 @@ for(rep in 1:6) {
   p_hat = 1 / (1 + exp(-1 * x %*% beta_hat))
   grad = t(y - p_hat) %*% x
   beta_hat = as.numeric(beta_hat + lambda * grad)
-  print(sum((beta_hat - beta)^2))
+  print(sum((beta_hat - beta_hat_actual)^2))
 }
 
 # This should show the estimated value converging to the value from the glm
@@ -70,13 +70,16 @@ for(rep in 1:6) {
 # Notice that this requires hadoop to execute an entire map-reduce job for
 # each iteration.
 
-beta_hat = rep(0, d)
+# NOTE: Change the "-rmr" flag below to "-rm -r" if using a newer version of
+#   hadoop (you will know because the "-rmr" produces an error in newer versions)
+
+beta_hat = rep(0, ncol(x))
 lambda = 0.01
 
 error = rep(NA, 6)
 for(rep in 1:6) {
-  r = hmr(hinput(hfname),
-          tempdir_hdfs(),
+  r = hmr(hinput("iotools_examples/input/input04_logistic_regression.dat"),
+          hpath("iotools_examples/output02"),
           reducers=1L,
           aux=list(beta_hat = beta_hat),
           formatter=list(mapper=function(m) mstrsplit(m, "|"),
@@ -95,11 +98,14 @@ for(rep in 1:6) {
             return(paste0(grad,sep="",collapse="|"))
           })
 
-  grad = system(paste0(HCMD, " fs -cat ", r, "/part-00000"),intern=TRUE)
+  grad = system(paste0(hfs, " -cat ", r, "/part-00000"),intern=TRUE)
   grad = as.numeric(mstrsplit(gsub("\t", "", grad), "|"))
   beta_hat = as.numeric(beta_hat + lambda * grad)
 
-  error[rep] = sum((beta_hat - beta)^2)
+  system(paste0(hfs, " -rmr ", r),intern=TRUE)
+
+  error[rep] = sum((beta_hat - beta_hat_actual)^2)
+  print(error)
 }
 
 # Print the errors at the end, as the get lost in all of the hadoop log output:

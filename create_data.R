@@ -40,6 +40,7 @@ n = 1000
 d = 10
 x = cbind(1, matrix(rnorm(n*(d-1)), ncol=d-1))
 y = as.numeric(x[,2] + rnorm(n) > 0)
+
 data = cbind(y, x)
 write.table(data, "data/input04_logistic_regression.dat",
             sep="|", col.names=FALSE, row.names=FALSE, quote=FALSE)
