@@ -111,5 +111,35 @@ for(rep in 1:6) {
 # Print the errors at the end, as the get lost in all of the hadoop log output:
 print(error)
 
+# This example illustrates a basic way to do logistic regression on a distributed
+# matrix using Hadoop, however it is far from good practice. Some issues include:
+#
+# (1) On truely large datasets, it is usually not necessary to run a regression
+#   analysis on the entire dataset. Subsampling will typically yield similar
+#   results. If the number of features is also very large, this may not be the
+#   case, but in here numerical errors will start creeping in; for very large
+#   problems some form of penalized regression is usually preferable.
+#
+# (2) Each iteration of the algorithm suffers from the set-up time of Hadoop
+#   (which is large), and requires all of the data to be re-read from disk by
+#   the mapper nodes. A solution using persistent data such as with message
+#   passing or threading would be far more efficent.
+#
+# (3) Using a warm start for the predicted beta_hat (i.e., the MLE from a small
+#   subset of data) can drastically reduce the number of iterations required, as
+#   well as reduce the chance of getting stuck in a non-optimal critical point of
+#   the solution space.
+#
+# (4) The gradient descent algorithm is conceptually nice, but not likely to be
+#   the best algorithm here. Stochastic gradient descent is likely to be both
+#   faster and more stable; a derivative-free method such as Nelder-Mead should
+#   be even more stable, easier to generalize to other variants and problems,
+#   and be less susceptible to the problem initialization. Finally, using ADMM
+#   would be a way to extend logistic regression (and other regression problems)
+#   to very large problem spaces.
+
+
+
+
 
 
